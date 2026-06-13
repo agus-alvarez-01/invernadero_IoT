@@ -1,0 +1,21 @@
+#!/usr/bin/env sh
+set -e
+
+echo "Running pre-commit linters..."
+
+# 1. Backend Linter (NestJS)
+echo "Linting Backend..."
+cd backend/nestjs
+npm run lint
+cd ../..
+
+# 2. Frontend Linter
+
+
+# 3. Firmware Linter (PlatformIO)
+echo "Linting Firmware..."
+cd firmware/esp32
+pio check --fail-on-defect medium
+cd ..
+
+echo "All linters passed."

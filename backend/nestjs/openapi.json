@@ -1,0 +1,137 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "API de Control del Invernadero IoT",
+    "version": "0.0.0",
+    "description": "Contrato de comunicación entre ESP32, Backend y Frontend."
+  },
+  "paths": {
+    "/metrics/:idDevice": {
+      "post": {
+        "summary": "Envío de metricas (ESP32 -> Backend)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/metricPayload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Metricas guardadas exitosamente."
+          },
+          "206": {
+            "description": "Metricas guardadas parcialmente. Revisar los siguientes sensores: []"
+          }
+        }
+      }
+    },
+    "/metrics/:idDevice/:sensorType": {
+      "get": {
+        "summary": "Historial de telemetría (Frontend -> Backend)",
+        "responses": {
+          "200": {
+            "description": "Lista de mediciones.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/metricResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/metrics/:idDevice/:sensorType/latest": {
+      "get": {
+        "summary": "Última medición en vivo (Frontend -> Backend)",
+        "responses": {
+          "200": {
+            "description": "Ultima medicion en vivo",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TelemetryResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/devices/:idDevice/pump": {
+      "post": {
+        "summary": "Forzar riego manual (Frontend -> Backend)",
+        "description": "Envía la orden de encender la bomba. Falla si no hay agua en el tanque.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": ""
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Riego exitoso."
+          },
+          "403": {
+            "description": "Error en el Riego, el tanque no tiene agua suficiente."
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "metricPayload": {
+        "type": "object",
+        "required": ["soilHum", "airHum", "temp", "waterLevel", "timestamp"],
+        "properties": {
+          "soilHum": {
+            "type": "number",
+            "example": 45.5
+          },
+          "airHum": {
+            "type": "number",
+            "example": 24.2
+          },
+          "temp": {
+            "type": "number",
+            "example": 60
+          },
+          "waterLevel": {
+            "type": "number",
+            "example": 85
+          },
+          "timestamp": {
+            "type": "number",
+            "example": 1780228946
+          }
+        }
+      },
+      "metricResponse": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "number",
+            "example": 45.5
+          },
+          "date": {
+            "type": "Date",
+            "example": "2026-10-31T14:30:00"
+          }
+        }
+      }
+    }
+  }
+}

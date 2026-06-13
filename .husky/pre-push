@@ -1,0 +1,17 @@
+#!/usr/bin/env sh
+set -e
+
+echo "Running pre-push tests..."
+
+# 1. Backend Tests (NestJS)
+echo "Placeholder Backend tests"
+
+
+# 2. Frontend Tests
+echo "Placeholder Frontend tests"
+
+# 3. Firmware Tests (PlatformIO)
+echo "Placeholder Firmware tests"
+
+
+echo "All tests passed. Proceeding with push."

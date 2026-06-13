@@ -1,0 +1,12 @@
+{
+  "name": "project-root-hooks",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "prepare": "husky",
+    "postinstall": "npm install --prefix backend/nestjs"
+  },
+  "devDependencies": {
+    "husky": "^9.0.0"
+  }
+}
