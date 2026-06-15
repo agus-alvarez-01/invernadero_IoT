@@ -2,11 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Metric } from 'src/models/entities/metric.entity';
-<<<<<<< HEAD
 import { IMetricsRepository } from 'src/ports/out/IMetricsRepository.interface';
-=======
-import { Sensor } from 'src/models/entities/sensor.entity';
->>>>>>> e08e2a6f0decb27159d59e42a5ae334a3b3e9f3b
 
 @Injectable()
 export class MetricsRepository implements IMetricsRepository {
@@ -34,21 +30,24 @@ export class MetricsRepository implements IMetricsRepository {
     idDevice: string,
     sensorTypes: any,
   ): Promise<Metric[]> {
-    return this.repo
-      .createQueryBuilder('metric')
-      .innerJoin('metric.sensor', 'sensor')
-      .innerJoin('sensor.device', 'device')
-      .distinctOn(['sensor.type'])
-      .select([
-        'sensor.type AS "sensorType"',
-        'metric.value AS "value"',
-        'metric.date AS "date"',
-      ])
-      .where('device.id = :idDevice', { idDevice })
-      .andWhere('sensor.type IN (:...sensorTypes)', { sensorTypes })
-      .orderBy('sensor.type', 'ASC')
-      .addOrderBy('metric.date', 'DESC')
-      .getRawMany();
+    return (
+      this.repo
+        .createQueryBuilder('metric')
+        .innerJoin('metric.sensor', 'sensor')
+        .innerJoin('sensor.device', 'device')
+        .distinctOn(['sensor.type'])
+        .select([
+          'sensor.type AS "sensorType"',
+          'metric.value AS "value"',
+          'metric.date AS "date"',
+        ])
+        .where('device.id = :idDevice', { idDevice })
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        .andWhere('sensor.type IN (:...sensorTypes)', { sensorTypes })
+        .orderBy('sensor.type', 'ASC')
+        .addOrderBy('metric.date', 'DESC')
+        .getRawMany()
+    );
   }
 
   /**
