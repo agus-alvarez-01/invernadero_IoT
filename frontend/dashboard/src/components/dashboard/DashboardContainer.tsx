@@ -1,25 +1,23 @@
 "use client";
 
-import { Box, SimpleGrid, Heading, Stat, Text } from "@chakra-ui/react";
+import { Box, SimpleGrid, Heading, Stat, Text, Icon } from "@chakra-ui/react";
 import { HumidityChart } from "@/components/charts/HumidityChart";
-import { Metric } from "@/types/main.types";
+import { sensorType } from "@/types/main.types";
 import { useLatestMetrics } from "@/hooks/useLatestMetrics";
 import { useHistoryMetrics } from "@/hooks/useHistoryMetrics";
+import { useState } from "react";
+import SensorTypeSelector from "./SensorTypeSelector";
 
-const mockSummaryCards = [
-  { type: "temp", label: "Temperatura", value: "24.5 °C" },
-  { type: "airHum", label: "Humedad del Aire", value: "62 %" },
-  { type: "soilHum", label: "Humedad del Suelo", value: "45 %" },
-  { type: "waterLevel", label: "Nivel de Agua", value: "80 %" },
-];
+const type = {
+  temp: "Temperatura",
+  soilHum: "Humedad del suelo",
+  airHum: "Humedad del aire",
+  waterLevel: "Nivel de agua",
+};
 
-interface DashboardContainerProps {
-  initialHistoryData: Metric[];
-}
+export function DashboardContainer() {
+  const [sensorType, setSensorType] = useState<sensorType>("temp");
 
-export function DashboardContainer({
-  initialHistoryData,
-}: DashboardContainerProps) {
   const latest = useLatestMetrics("ESP32-INV-01", [
     "soilHum",
     "temp",
@@ -27,15 +25,19 @@ export function DashboardContainer({
     "waterLevel",
   ]);
 
-  const history = useHistoryMetrics("ESP32-INV-01", "temp");
+  const history = useHistoryMetrics("ESP32-INV-01", sensorType);
 
   return (
-    <Box p={6} maxWidth="100vw" mx="auto">
-      <Heading size="lg" mb={6} color="gray.800">
+    <Box p={6} maxWidth="100vw" mx="auto" bg="black">
+      <Heading size="lg" mb={6} color="white">
         Panel de Monitoreo ESP32
       </Heading>
 
-      <SimpleGrid columns={{ base: 1, sm: 2, md: 4 }} gap={6}>
+      <Text w="100%" textAlign="right">
+        Ultima actualizacion: {new Date(latest.metrics[0]?.date).toTimeString()}
+      </Text>
+
+      <SimpleGrid columns={{ base: 1, sm: 2, md: 4 }} gap={6} mt={4} mb={8}>
         {latest.metrics.map((card, i) => (
           <Box
             key={i}
@@ -47,7 +49,7 @@ export function DashboardContainer({
           >
             <Stat.Root>
               <Stat.Label color="gray.400" fontSize="sm">
-                {card.sensorType}
+                {type[card.sensorType]}
               </Stat.Label>
               <Stat.ValueText fontSize="2xl" fontWeight="bold">
                 {card.value} {card.sensorType == "temp" ? "°C" : "%"}
@@ -59,12 +61,7 @@ export function DashboardContainer({
           </Box>
         ))}
       </SimpleGrid>
-
-      <Text w="100%" textAlign="right" mt={2} mb={8}>
-        Ultima actualizacion:{" "}
-        {new Date(latest.metrics[0]?.date).toLocaleTimeString()}
-      </Text>
-
+      <SensorTypeSelector setType={setSensorType} />
       <SimpleGrid columns={{ base: 1 }} gap={6}>
         <Box
           p={6}
@@ -73,9 +70,10 @@ export function DashboardContainer({
           borderRadius="xl"
           shadow="md"
         >
-          <Heading size="md" mb={6} color="blue.300">
-            Historial de Humedad del Aire (Datos del Servidor Mock)
+          <Heading size="md" mb={6} color="gray.300">
+            Historial de {type[sensorType]}
           </Heading>
+
           <Box height="300px">
             <HumidityChart data={history.history} />
           </Box>

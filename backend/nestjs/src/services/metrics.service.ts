@@ -5,7 +5,7 @@ import { SensorsRepository } from 'src/repositories/sensors.repository';
 import {
   isAnomalousReading,
   calculateDewPoint,
-  //calculateMovingAverage,
+  calculateMovingAverage,
 } from 'src/algorithms/climate-math';
 import {
   clasificarSuelo,
@@ -27,13 +27,13 @@ export class MetricsService {
       ['temp'],
     );
 
-    console.log(dto);
     // Le decimos explícitamente al linter que confíe en que es un número
 
     const rawValue = latestData.length > 0 ? latestData[0].value : null;
     const lastTemp = rawValue !== null ? Number(rawValue) : null;
 
     const isAnomaly = isAnomalousReading(dto.temp, lastTemp);
+
     // B. Procesamiento Matemático
     const dewPointResult = calculateDewPoint(dto.temp, dto.airHum);
     const soilStatus = clasificarSuelo(dto.soilHum);
@@ -41,6 +41,7 @@ export class MetricsService {
 
     // C. Reporte en consola
     this.logger.log(`[Dispositivo ${idDevice}] Procesando nuevas métricas...`);
+
     this.logger.log(
       `Suelo: ${soilStatus} | Tanque Crítico: ${isTankCritical} | Rocío: ${dewPointResult.dewPoint}°C (${dewPointResult.status})`,
     );
@@ -110,17 +111,13 @@ export class MetricsService {
 
     if (history.length === 0) return [];
 
-    /*
     const rawValues = history.map((item) => item.value);
 
-    
     const averages = calculateMovingAverage(rawValues, 5);
 
-    // return history.map((item, index) => ({
-    //   value: averages[index], // 
-    //   date: item.date, // 
-    // }));
-    */
-    return history;
+    return history.map((item, index) => ({
+      value: averages[index], //
+      date: item.date,
+    }));
   }
 }
