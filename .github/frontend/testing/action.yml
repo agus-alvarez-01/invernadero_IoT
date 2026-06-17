@@ -13,12 +13,7 @@ runs:
         cache: npm
         cache-dependency-path: frontend/dashboard/package-lock.json
 
-    - name: Install dependencies
-      shell: bash
-      working-directory: frontend/dashboard
-      run: npm ci --legacy-peer-deps
-
     - name: Run Tests
       shell: bash
       working-directory: frontend/dashboard
-      run: npm test -- --runInBand
+      run: npm test 
