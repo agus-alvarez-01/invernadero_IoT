@@ -23,7 +23,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Execute Frontend Build
-        uses: ./.github/frontend/build
+        uses: ./.github/frontend/building
 
   frontend-test:
     name: Frontend Tests
