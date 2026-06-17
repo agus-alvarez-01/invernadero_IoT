@@ -1,3 +1,4 @@
+#ifdef ARDUINO
 #ifndef SOILMOISTURESENSOR_H
 #define SOILMOISTURESENSOR_H
 
@@ -19,3 +20,4 @@ class SoilMoistureSensor : public Sensor {
 };
 
 #endif // SOILMOISTURESENSOR_H
+#endif // ARDUINO

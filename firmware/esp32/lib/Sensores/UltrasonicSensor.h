@@ -1,3 +1,4 @@
+#ifdef ARDUINO
 #ifndef ULTRASONICSENSOR_H
 #define ULTRASONICSENSOR_H
 
@@ -22,3 +23,4 @@ class UltrasonicSensor : public Sensor {
 };
 
 #endif // ULTRASONICSENSOR_H
+#endif // ARDUINO
