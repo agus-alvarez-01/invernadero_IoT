@@ -29,7 +29,7 @@
         }
       }
     },
-    "/metrics/:idDevice/:sensorType": {
+    "/metrics/:idDevice/history?:sensorType": {
       "get": {
         "summary": "Historial de telemetría (Frontend -> Backend)",
         "responses": {
@@ -49,7 +49,7 @@
         }
       }
     },
-    "/metrics/:idDevice/:sensorType/latest": {
+    "/metrics/:idDevice/latest?sensorType=:sensorType": {
       "get": {
         "summary": "Última medición en vivo (Frontend -> Backend)",
         "responses": {
@@ -62,30 +62,6 @@
                 }
               }
             }
-          }
-        }
-      }
-    },
-    "/devices/:idDevice/pump": {
-      "post": {
-        "summary": "Forzar riego manual (Frontend -> Backend)",
-        "description": "Envía la orden de encender la bomba. Falla si no hay agua en el tanque.",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": ""
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Riego exitoso."
-          },
-          "403": {
-            "description": "Error en el Riego, el tanque no tiene agua suficiente."
           }
         }
       }
@@ -112,10 +88,6 @@
           "waterLevel": {
             "type": "number",
             "example": 85
-          },
-          "timestamp": {
-            "type": "number",
-            "example": 1780228946
           }
         }
       },

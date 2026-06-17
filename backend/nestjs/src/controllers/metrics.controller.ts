@@ -30,7 +30,8 @@ export class MetricsController {
    * GET /metrics/:idDevice/latest?sensorType=temp,airHum
    */
   @Get(':idDevice/latest')
-  async getRealTimeReadings(
+  @HttpCode(HttpStatus.OK)
+  async getLatestReadings(
     @Param('idDevice') idDevice: string,
     @Query('sensorType') sensorType?: string,
   ) {
@@ -51,22 +52,20 @@ export class MetricsController {
    * GET /metrics/:idDevice/history?sensorType=temp&rango=hoy
    */
   @Get(':idDevice/history')
+  @HttpCode(HttpStatus.OK)
   async getHistoricalReadings(
     @Param('idDevice') idDevice: string,
     @Query('sensorType') sensorType?: string,
-    @Query('range') timeframe?: string,
   ) {
     if (!sensorType) {
       throw new BadRequestException(
         'The "sensorType" query parameter is required.',
       );
     }
-    // Default to 'today' (today) if no timeframe parameter is supplied from frontend
-    const selectedTimeframe = timeframe || 'today';
+
     return this.metricsService.getHistoryBySensorType(
       idDevice,
       sensorType.trim(),
-      selectedTimeframe,
     );
   }
 }

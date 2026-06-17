@@ -6,11 +6,9 @@
  *
  * Suggested layout: summary cards on top, main charts in the middle, comparison and alerts below.
  */
-//"use client";
 
-import { DashboardContainer } from "@/components/dashboard/DashboardContainer"
+import { DashboardContainer } from "@/components/dashboard/DashboardContainer";
 import { mockHumidityData } from "@/app/dashboard/mock/mockHumidityData";
-
 
 export default function DashboardPage() {
   return <DashboardContainer initialHistoryData={mockHumidityData} />;

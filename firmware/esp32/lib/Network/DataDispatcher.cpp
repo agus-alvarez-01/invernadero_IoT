@@ -26,8 +26,6 @@ void DataDispatcher::update()
             doc["waterLevel"] = sensor->getValue();
     }
 
-    doc["timestamp"] = 1775080000000;
-
     // Serialize JSON en un String
     String jsonOutput;
     serializeJson(doc, jsonOutput);

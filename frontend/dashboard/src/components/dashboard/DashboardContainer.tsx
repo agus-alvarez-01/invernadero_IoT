@@ -1,12 +1,10 @@
 "use client";
 
-import { Box, SimpleGrid, Heading, Stat, StatLabel, Text, StatNumber, StatHelpText } from "@chakra-ui/react"
-import { useRealtimeMetrics } from "@/hooks/useRealtimeMetrics";
-import { useHistoryMetrics } from "@/hooks/useHistoryMetrics";
+import { Box, SimpleGrid, Heading, Stat, Text } from "@chakra-ui/react";
 import { HumidityChart } from "@/components/charts/HumidityChart";
-import { mockHumidityData } from "@/app/dashboard/mock/mockHumidityData";
 import { Metric } from "@/types/main.types";
-import Head from "next/head";
+import { useLatestMetrics } from "@/hooks/useLatestMetrics";
+import { useHistoryMetrics } from "@/hooks/useHistoryMetrics";
 
 const mockSummaryCards = [
   { type: "temp", label: "Temperatura", value: "24.5 °C" },
@@ -15,60 +13,74 @@ const mockSummaryCards = [
   { type: "waterLevel", label: "Nivel de Agua", value: "80 %" },
 ];
 
-
 interface DashboardContainerProps {
-    initialHistoryData: Metric[];
+  initialHistoryData: Metric[];
 }
 
-
-
-export function DashboardContainer({ initialHistoryData }: DashboardContainerProps) {
-/*
-    REALTIMEMETRICS HOOK DISABLED FOR TESTING
-
-    const { metrics, loading, error } = useRealtimeMetrics("ESP32-INV-01", [
+export function DashboardContainer({
+  initialHistoryData,
+}: DashboardContainerProps) {
+  const latest = useLatestMetrics("ESP32-INV-01", [
     "soilHum",
     "temp",
     "airHum",
     "waterLevel",
-  ])
-}
-*/
+  ]);
 
-    return (
-        <Box p={6} maxWidth="1200px" mx="auto">
-            <Heading size="lg" mb={6} color="gray.300">
-                Panel de Monitoreo ESP32 (mock)
-            </Heading>
+  const history = useHistoryMetrics("ESP32-INV-01", "temp");
 
-            <SimpleGrid columns={{ base: 1, sm: 2, md: 4 }} gap={6} mb={8}>
-                {mockSummaryCards.map((card, i) => (
-                    <Box key={i} p={5} bg="gray.800" borderWidth="1px" borderColor="gray.700" borderRadius="xl" shadow="md">
-                        <Stat>
-                            <StatLabel color="gray.400" fontSize="sm">
-                                {card.label}
-                            </StatLabel>
-                            <StatNumber fontSize="2xl" fontWeight="bold" color="white">
-                                {card.value}
-                            </StatNumber>
-                            <StatHelpText color="gray.400" fontSize="xs" mb={0}>
-                                ESP32-INV-01 (Mock)
-                            </StatHelpText>
-                        </Stat>
-                    </Box>
-                ))}
-            </SimpleGrid>
+  return (
+    <Box p={6} maxWidth="100vw" mx="auto">
+      <Heading size="lg" mb={6} color="gray.800">
+        Panel de Monitoreo ESP32
+      </Heading>
 
-            <SimpleGrid columns={{ base: 1 }} gap={6}>
-                <Box p={6} bg="gray.800" borderWidth="1px" borderColor="gray.700" borderRadius="xl" shadow="md">
-                    <Heading size="md" mb={6} color="blue.300">
-                        Historial de Humedad del Aire (Datos del Servidor Mock)
-                    </Heading>
-                    <Box height="300px">
-                        <HumidityChart data={initialHistoryData} />
-                    </Box>
-                </Box>
-            </SimpleGrid>
+      <SimpleGrid columns={{ base: 1, sm: 2, md: 4 }} gap={6}>
+        {latest.metrics.map((card, i) => (
+          <Box
+            key={i}
+            p={5}
+            borderWidth={1}
+            borderColor="gray.200"
+            borderRadius="xl"
+            shadow="md"
+          >
+            <Stat.Root>
+              <Stat.Label color="gray.400" fontSize="sm">
+                {card.sensorType}
+              </Stat.Label>
+              <Stat.ValueText fontSize="2xl" fontWeight="bold">
+                {card.value} {card.sensorType == "temp" ? "°C" : "%"}
+              </Stat.ValueText>
+              <Stat.HelpText color="gray.400" fontSize="xs" mb={0}>
+                ESP32-INV-01
+              </Stat.HelpText>
+            </Stat.Root>
+          </Box>
+        ))}
+      </SimpleGrid>
+
+      <Text w="100%" textAlign="right" mt={2} mb={8}>
+        Ultima actualizacion:{" "}
+        {new Date(latest.metrics[0]?.date).toLocaleTimeString()}
+      </Text>
+
+      <SimpleGrid columns={{ base: 1 }} gap={6}>
+        <Box
+          p={6}
+          borderWidth={1}
+          borderColor="gray.200"
+          borderRadius="xl"
+          shadow="md"
+        >
+          <Heading size="md" mb={6} color="blue.300">
+            Historial de Humedad del Aire (Datos del Servidor Mock)
+          </Heading>
+          <Box height="300px">
+            <HumidityChart data={history.history} />
+          </Box>
         </Box>
-    );
+      </SimpleGrid>
+    </Box>
+  );
 }
