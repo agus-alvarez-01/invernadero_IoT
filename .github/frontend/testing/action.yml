@@ -1,6 +1,6 @@
 name: Frontend Testing
 
-description: Execute frontend unit tests
+description: Run frontend tests
 
 runs:
   using: composite
@@ -13,7 +13,12 @@ runs:
         cache: npm
         cache-dependency-path: frontend/dashboard/package-lock.json
 
-    - name: Run Tests
+    - name: Install dependencies
+      shell: bash
+      working-directory: frontend/dashboard
+      run: npm ci --legacy-peer-deps
+
+    - name: Run tests
       shell: bash
       working-directory: frontend/dashboard
       run: npm test 
