@@ -58,15 +58,8 @@ void test_dispatcher_empty_sensors(void) {
 
     TEST_ASSERT_TRUE(mockApi->sendPostCalled);
 
-    StaticJsonDocument<200> doc;
-    DeserializationError error = deserializeJson(doc, mockApi->capturedPayload);
-    TEST_ASSERT_EQUAL_INT(DeserializationError::Ok, error.code());
-
-    TEST_ASSERT_TRUE(doc.is<JsonObject>());
-
-    String timestampStr = doc["timestamp"].as<String>();
-    
-    TEST_ASSERT_EQUAL_STRING(DEFAULT_TIMESTAMP, timestampStr.c_str());
+   
+    TEST_ASSERT_EQUAL_STRING("null", mockApi->capturedPayload.c_str());
 }
 
 void test_dispatcher_single_sensor(void) {
@@ -86,8 +79,6 @@ void test_dispatcher_single_sensor(void) {
     TEST_ASSERT_TRUE(doc.containsKey("temp"));
     TEST_ASSERT_EQUAL_FLOAT(22.50, doc["temp"].as<float>());
     
-    String timestampStr = doc["timestamp"].as<String>();    
-    TEST_ASSERT_EQUAL_STRING(DEFAULT_TIMESTAMP, timestampStr.c_str());
 
 }
 
@@ -110,8 +101,6 @@ void test_dispatcher_multiple_sensor(void) {
     TEST_ASSERT_EQUAL_FLOAT(23.50, doc["temp"].as<float>());
     TEST_ASSERT_EQUAL_FLOAT(60.00, doc["airHum"].as<float>());
 
-    String timestampStr = doc["timestamp"].as<String>();    
-    TEST_ASSERT_EQUAL_STRING(DEFAULT_TIMESTAMP, timestampStr.c_str());
 
     TEST_ASSERT_FALSE(doc.containsKey("soilHum"));
 

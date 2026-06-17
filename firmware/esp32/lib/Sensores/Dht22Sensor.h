@@ -1,3 +1,4 @@
+#ifdef ARDUINO
 #ifndef DHT22SENSOR_H
 #define DHT22SENSOR_H
 
@@ -24,3 +25,4 @@ class Dht22Sensor : public Sensor {
 };
 
 #endif // DHT22SENSOR:H
+#endif // ARDUINO

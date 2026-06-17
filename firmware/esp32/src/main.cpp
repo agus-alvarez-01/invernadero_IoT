@@ -6,9 +6,20 @@
 #include "UltrasonicSensor.h"
 #include <Arduino.h>
 
+
+#ifdef USE_MOCK_SENSORS
+    #include "MockSensorAdapter.h"
+#else
+    #include "SoilMoistureSensor.h"
+    #include "Dht22Sensor.h"
+    #include "UltrasonicSensor.h"
+#endif
+
 // Configuration constants
+
 const char* WIFI_SSID = "FIbertel WiFi614 2.4GHz";
 const char* WIFI_PASSWORD = "614156557679";
+
 
 // IMPORTANT: Use your computer's local IP address instead of localhost if testing locally
 const char* API_URL = "http://192.168.0.19:3001/metrics/ESP32-INV-01";
@@ -35,11 +46,17 @@ void setup()
     apiConnection = new ApiConnection(WIFI_SSID, WIFI_PASSWORD, API_URL);
     apiConnection->connectWiFi();
 
-    // Initialize Sensors (Adjust pins as needed)
-    sensorManager.addSensor(new SoilMoistureSensor(34));
-    sensorManager.addSensor(new Dht22Sensor(4, true));
-    sensorManager.addSensor(new Dht22Sensor(4, false));
-    sensorManager.addSensor(new UltrasonicSensor(5, 18));
+    #ifdef USE_MOCK_SENSORS
+        Serial.println("MODO SIMULACIÓN: Cargando adaptadores matemáticos...");
+        sensorManager.addSensor(new MockTemperatureAdapter());
+        sensorManager.addSensor(new MockHumidityAdapter());
+    #else
+        // Initialize Sensors (Adjust pins as needed)
+        sensorManager.addSensor(new SoilMoistureSensor(34));
+        sensorManager.addSensor(new Dht22Sensor(4, true));
+        sensorManager.addSensor(new Dht22Sensor(4, false));
+        sensorManager.addSensor(new UltrasonicSensor(5, 18));
+    #endif
 
     // Initialize the Observer and wire it to the Subject
     dataDispatcher = new DataDispatcher(&sensorManager, apiConnection);

@@ -1,3 +1,4 @@
+#ifdef ARDUINO
 #include "UltrasonicSensor.h"
 
 UltrasonicSensor::UltrasonicSensor(int triggerPin, int echoPin, int maxDistance)
@@ -28,3 +29,5 @@ float UltrasonicSensor::getValue()
 {
     return this->currentDistance;
 }
+
+#endif 

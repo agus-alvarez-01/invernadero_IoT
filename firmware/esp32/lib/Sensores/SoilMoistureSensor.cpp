@@ -1,3 +1,4 @@
+#ifdef ARDUINO
 #include "SoilMoistureSensor.h"
 
 // Constructor
@@ -25,3 +26,5 @@ float SoilMoistureSensor::getValue()
 {
     return this->currentValue;
 }
+
+#endif

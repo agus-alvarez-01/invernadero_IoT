@@ -1,3 +1,4 @@
+#ifdef ARDUINO
 #include "Dht22Sensor.h"
 
 Dht22Sensor::Dht22Sensor(int pin, bool isTemperature)
@@ -54,3 +55,5 @@ float Dht22Sensor::getValue()
 {
     return this->currentValue;
 }
+
+#endif

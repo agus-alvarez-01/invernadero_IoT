@@ -22,19 +22,18 @@ export class MetricsService {
   ) {}
 
   async registerMetrics(idDevice: string, dto: CreateMetricDto) {
-    // A. Filtro de Anomalías (Buscamos la última temp usando el método de tu compañero)
     const latestData = await this.metricsRepository.findLatestMetrics(
       idDevice,
       ['temp'],
     );
 
-    console.log(dto);
     // Le decimos explícitamente al linter que confíe en que es un número
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
+
     const rawValue = latestData.length > 0 ? latestData[0].value : null;
     const lastTemp = rawValue !== null ? Number(rawValue) : null;
 
     const isAnomaly = isAnomalousReading(dto.temp, lastTemp);
+
     // B. Procesamiento Matemático
     const dewPointResult = calculateDewPoint(dto.temp, dto.airHum);
     const soilStatus = clasificarSuelo(dto.soilHum);
@@ -42,6 +41,7 @@ export class MetricsService {
 
     // C. Reporte en consola
     this.logger.log(`[Dispositivo ${idDevice}] Procesando nuevas métricas...`);
+
     this.logger.log(
       `Suelo: ${soilStatus} | Tanque Crítico: ${isTankCritical} | Rocío: ${dewPointResult.dewPoint}°C (${dewPointResult.status})`,
     );
@@ -111,19 +111,13 @@ export class MetricsService {
 
     if (history.length === 0) return [];
 
-    // 1. Extraemos solo los números para pasárselos a tu función
     const rawValues = history.map((item) => item.value);
 
-    // 2. Calculamos los promedios (reutilizando tu función calculateMovingAverage)
     const averages = calculateMovingAverage(rawValues, 5);
 
-    // 3. Creamos el nuevo array mapeando el historial original
-    // y reemplazando el valor original por el promedio usando el "index"
-    // return history.map((item, index) => ({
-    //   value: averages[index], // <-- Aquí asignamos el promedio calculado
-    //   date: item.date, // <-- Aquí mantenemos la fecha original de ese registro
-    // }));
-
-    return history;
+    return history.map((item, index) => ({
+      value: averages[index], //
+      date: item.date,
+    }));
   }
 }
