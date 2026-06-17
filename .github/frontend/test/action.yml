@@ -1,0 +1,22 @@
+name: Frontend Test
+
+description: Run frontend unit tests
+
+runs:
+  using: composite
+
+  steps:
+    - name: Setup Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: 22
+
+    - name: Install dependencies
+      shell: bash
+      working-directory: frontend/dashboard
+      run: npm ci
+
+    - name: Run tests
+      shell: bash
+      working-directory: frontend/dashboard
+      run: npm test -- --runInBand
