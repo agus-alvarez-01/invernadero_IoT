@@ -7,8 +7,6 @@
 
 export type sensorType = "temp" | "waterLevel" | "airHum" | "soilHum";
 
-export type timeFrame = "today" | "week" | "month";
-
 export type AlertSeverity = "low" | "medium" | "high";
 
 export interface Metric {

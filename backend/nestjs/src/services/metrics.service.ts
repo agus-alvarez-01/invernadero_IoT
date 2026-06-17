@@ -1,16 +1,57 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { CreateMetricDto } from '../models/dto/create-metric.dto';
 import { MetricsRepository } from 'src/repositories/metrics.repository';
 import { SensorsRepository } from 'src/repositories/sensors.repository';
+import {
+  isAnomalousReading,
+  calculateDewPoint,
+  calculateMovingAverage,
+} from 'src/algorithms/climate-math';
+import {
+  clasificarSuelo,
+  isTankLevelCritical,
+} from 'src/algorithms/soil-and-tank-math';
 
 @Injectable()
 export class MetricsService {
+  private readonly logger = new Logger(MetricsService.name);
+
   constructor(
     private readonly metricsRepository: MetricsRepository,
     private readonly sensorsRepository: SensorsRepository,
   ) {}
 
   async registerMetrics(idDevice: string, dto: CreateMetricDto) {
+    // A. Filtro de Anomalías (Buscamos la última temp usando el método de tu compañero)
+    const latestData = await this.metricsRepository.findLatestMetrics(
+      idDevice,
+      ['temp'],
+    );
+
+    console.log(dto);
+    // Le decimos explícitamente al linter que confíe en que es un número
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
+    const rawValue = latestData.length > 0 ? latestData[0].value : null;
+    const lastTemp = rawValue !== null ? Number(rawValue) : null;
+
+    const isAnomaly = isAnomalousReading(dto.temp, lastTemp);
+    // B. Procesamiento Matemático
+    const dewPointResult = calculateDewPoint(dto.temp, dto.airHum);
+    const soilStatus = clasificarSuelo(dto.soilHum);
+    const isTankCritical = isTankLevelCritical(dto.waterLevel);
+
+    // C. Reporte en consola
+    this.logger.log(`[Dispositivo ${idDevice}] Procesando nuevas métricas...`);
+    this.logger.log(
+      `Suelo: ${soilStatus} | Tanque Crítico: ${isTankCritical} | Rocío: ${dewPointResult.dewPoint}°C (${dewPointResult.status})`,
+    );
+
+    if (isAnomaly) {
+      this.logger.warn(
+        `¡Anomalía térmica detectada! Nueva: ${dto.temp}°C | Anterior: ${lastTemp}°C. Se descartará este valor.`,
+      );
+    }
+
     // 2. Mapeamos las métricas del DTO a un formato clave-valor para iterarlas fácilmente
     const mapMetrics = {
       temp: dto.temp,
@@ -62,12 +103,27 @@ export class MetricsService {
   async getHistoryBySensorType(
     idDevice: string,
     sensorType: string,
-    timeframe: string,
   ): Promise<any[]> {
-    return await this.metricsRepository.findHistoryMetrics(
+    const history = await this.metricsRepository.findHistoryMetrics(
       idDevice,
       sensorType,
-      timeframe,
     );
+
+    if (history.length === 0) return [];
+
+    // 1. Extraemos solo los números para pasárselos a tu función
+    const rawValues = history.map((item) => item.value);
+
+    // 2. Calculamos los promedios (reutilizando tu función calculateMovingAverage)
+    const averages = calculateMovingAverage(rawValues, 5);
+
+    // 3. Creamos el nuevo array mapeando el historial original
+    // y reemplazando el valor original por el promedio usando el "index"
+    // return history.map((item, index) => ({
+    //   value: averages[index], // <-- Aquí asignamos el promedio calculado
+    //   date: item.date, // <-- Aquí mantenemos la fecha original de ese registro
+    // }));
+
+    return history;
   }
 }

@@ -16,13 +16,25 @@ Dht22Sensor::~Dht22Sensor()
 
 void Dht22Sensor::readData()
 {
+    float reading = 0.0;
+
     if (this->readTemperature)
     {
-        this->currentValue = this->dht->readTemperature();
+        reading = this->dht->readTemperature();
     }
     else
     {
-        this->currentValue = this->dht->readHumidity();
+        reading = this->dht->readHumidity();
+    }
+
+    // Si la lectura no es un número (falló el sensor), asignamos 0
+    if (isnan(reading))
+    {
+        this->currentValue = 0.0;
+    }
+    else
+    {
+        this->currentValue = reading;
     }
 }
 

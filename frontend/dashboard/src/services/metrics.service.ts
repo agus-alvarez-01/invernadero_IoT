@@ -9,7 +9,7 @@
  * - `getAlerts()` — fetch alert payloads for widgets
  */
 
-import { sensorType, timeFrame } from "@/types/main.types";
+import { sensorType } from "@/types/main.types";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
@@ -23,7 +23,7 @@ export const getLatestReadings = async (
 ) => {
   const typesQuery = sensorTypes.join(",");
   const response = await fetch(
-    `${API_BASE_URL}/metrics/${idDevice}/realtime?sensorType=${typesQuery}`,
+    `${API_BASE_URL}/metrics/${idDevice}/latest?sensorType=${typesQuery}`,
   );
 
   if (!response.ok) {
@@ -39,10 +39,9 @@ export const getLatestReadings = async (
 export const getReadingsBySensor = async (
   idDevice: string,
   sensorType: sensorType,
-  timeframe: timeFrame = "today",
 ) => {
   const response = await fetch(
-    `${API_BASE_URL}/metrics/${idDevice}/history?sensorType=${sensorType}&range=${timeframe}`,
+    `${API_BASE_URL}/metrics/${idDevice}/history?sensorType=${sensorType}`,
   );
 
   if (!response.ok) {

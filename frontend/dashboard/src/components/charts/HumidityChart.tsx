@@ -9,42 +9,57 @@
  * - Must not call `fetch()` or contain data-fetching logic.
  */
 
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 import type { HumidityChartProps } from "@/types/main.types";
 
-export function HumidityChart( { data }: HumidityChartProps) {
+export function HumidityChart({ data }: HumidityChartProps) {
+  const reverseData = [...data].reverse();
+
   return (
     <ResponsiveContainer width="100%" height={300}>
-      <LineChart data={data}>
-
+      <LineChart data={reverseData}>
         <defs>
           <linearGradient id="humidityGradient" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="5%" stopColor="#3182CE" stopOpacity={0.8} />
-          <stop offset="95%" stopColor="#3182CE" stopOpacity={0} />
+            <stop offset="5%" stopColor="#3182CE" stopOpacity={0.8} />
+            <stop offset="95%" stopColor="#3182CE" stopOpacity={0} />
           </linearGradient>
         </defs>
 
         <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="date" tickFormatter={(d) => new Date(d).toLocaleTimeString()} interval={0}/>
+        <XAxis
+          dataKey="date"
+          tickFormatter={(d) => new Date(d).toLocaleTimeString()}
+          interval={2}
+        />
         <YAxis />
-        <Tooltip labelFormatter={(d) => {
-          const date = new Date(d);
-          return isNaN(date.getTime()) ? "Fecha Inválida" : date.toLocaleDateString();
-        }} 
-        
-        contentStyle={{
-          backgroundColor: "#11161e",
-          borderColor: "#4A5568",
-          borderRadius: "8px",
-          boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)"
-        }}
-        itemStyle={{
-          color: "#3182CE",
-          fontWeight: "bold"
-        }}
-        labelStyle={{
-          color: "#A0AEC0"
-        }}
+        <Tooltip
+          labelFormatter={(d) => {
+            const date = new Date(d);
+            return isNaN(date.getTime())
+              ? "Fecha Inválida"
+              : date.toLocaleDateString();
+          }}
+          contentStyle={{
+            backgroundColor: "#11161e",
+            borderColor: "#4A5568",
+            borderRadius: "8px",
+            boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+          }}
+          itemStyle={{
+            color: "#3182CE",
+            fontWeight: "bold",
+          }}
+          labelStyle={{
+            color: "#A0AEC0",
+          }}
         />
         <Line
           type="monotone"

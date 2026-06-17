@@ -2,11 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Metric } from 'src/models/entities/metric.entity';
-<<<<<<< HEAD
 import { IMetricsRepository } from 'src/ports/out/IMetricsRepository.interface';
-=======
-import { Sensor } from 'src/models/entities/sensor.entity';
->>>>>>> e08e2a6f0decb27159d59e42a5ae334a3b3e9f3b
 
 @Injectable()
 export class MetricsRepository implements IMetricsRepository {
@@ -34,21 +30,24 @@ export class MetricsRepository implements IMetricsRepository {
     idDevice: string,
     sensorTypes: any,
   ): Promise<Metric[]> {
-    return this.repo
-      .createQueryBuilder('metric')
-      .innerJoin('metric.sensor', 'sensor')
-      .innerJoin('sensor.device', 'device')
-      .distinctOn(['sensor.type'])
-      .select([
-        'sensor.type AS "sensorType"',
-        'metric.value AS "value"',
-        'metric.date AS "date"',
-      ])
-      .where('device.id = :idDevice', { idDevice })
-      .andWhere('sensor.type IN (:...sensorTypes)', { sensorTypes })
-      .orderBy('sensor.type', 'ASC')
-      .addOrderBy('metric.date', 'DESC')
-      .getRawMany();
+    return (
+      this.repo
+        .createQueryBuilder('metric')
+        .innerJoin('metric.sensor', 'sensor')
+        .innerJoin('sensor.device', 'device')
+        .distinctOn(['sensor.type'])
+        .select([
+          'sensor.type AS "sensorType"',
+          'metric.value AS "value"',
+          'metric.date AS "date"',
+        ])
+        .where('device.id = :idDevice', { idDevice })
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        .andWhere('sensor.type IN (:...sensorTypes)', { sensorTypes })
+        .orderBy('sensor.type', 'ASC')
+        .addOrderBy('metric.date', 'DESC')
+        .getRawMany()
+    );
   }
 
   /**
@@ -57,35 +56,27 @@ export class MetricsRepository implements IMetricsRepository {
   async findHistoryMetrics(
     idDevice: string,
     sensorType: string,
-    timeframe: string,
   ): Promise<any[]> {
-    // 1. Initialize the query building target columns
     const query = this.repo
       .createQueryBuilder('metric')
       .innerJoin('metric.sensor', 'sensor')
       .innerJoin('sensor.device', 'device')
       .select([
-        'metric.id AS "id"',
-        'metric.value AS "value"',
-        'metric.date AS "date"',
+        // 1. Promediamos el valor y lo casteamos a float/number
+        'AVG(metric.value) AS "value"',
+
+        // 2. Truncamos la fecha al minuto (Ejemplo para PostgreSQL)
+        'DATE_TRUNC(\'minute\', metric.date) AS "date"',
       ])
       .where('device.id = :idDevice', { idDevice })
       .andWhere('sensor.type = :sensorType', { sensorType })
-      .orderBy('metric.date', 'ASC'); // Oldest to newest for frontend lines
+      // 3. Agrupamos por la fecha truncada al minuto
+      .groupBy("DATE_TRUNC('minute', metric.date)")
+      // 4. Ordenamos por el grupo de fecha
+      .orderBy("DATE_TRUNC('minute', metric.date)", 'DESC')
+      .limit(20);
 
-    // 2. Dynamically inject SQL timestamp limits depending on timeframe query
-    if (timeframe === 'today') {
-      const startOfToday = new Date();
-      startOfToday.setHours(0, 0, 0, 0); // 00:00:00 local time
-      query.andWhere('metric.date >= :startOfToday', { startOfToday });
-    }
-    if (timeframe === 'week') {
-      const oneWeekAgo = new Date();
-      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7); // 7 days back
-      query.andWhere('metric.date >= :oneWeekAgo', { oneWeekAgo });
-    }
-
-    // 3. Execute query bypassing ORM entity hydration for ultimate speed
+    // Ejecuta la query sin mapeo de entidades
     return query.getRawMany();
   }
 }

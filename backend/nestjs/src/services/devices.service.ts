@@ -1,10 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { DevicesRepository } from 'src/repositories/device.repository';
 
 @Injectable()
 export class DevicesService {
-<<<<<<< HEAD
-  constructor() {}
-=======
   constructor(
     private readonly deviceRepository: DevicesRepository,
     // private readonly mqttService: MqttService <-- Opcional: Para enviarle la orden al ESP32 por MQTT
@@ -39,5 +37,4 @@ export class DevicesService {
 
     return dispositivoActualizado;
   }
->>>>>>> e08e2a6f0decb27159d59e42a5ae334a3b3e9f3b
 }
