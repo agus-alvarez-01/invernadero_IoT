@@ -7,6 +7,7 @@ jest-environment-jsdom \
 @testing-library/react \
 @testing-library/jest-dom \
 @testing-library/user-event
+@testing-library/dom
 
 echo ""
 echo "==================================="
