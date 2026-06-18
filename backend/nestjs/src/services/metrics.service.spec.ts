@@ -6,7 +6,7 @@ jest.mock('src/algorithms/climate-math', () => ({
   calculateDewPoint: jest
     .fn()
     .mockReturnValue({ dewPoint: 14.2, status: 'NORMAL' }),
-  calculateMovingAverage: jest.fn(),
+  calculateMovingAverage: jest.fn().mockImplementation((values: unknown[]) => values),
 }));
 
 jest.mock('src/algorithms/soil-and-tank-math', () => ({
