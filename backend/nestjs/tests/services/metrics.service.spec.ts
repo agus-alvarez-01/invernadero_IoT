@@ -1,12 +1,17 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { MetricsService } from './metrics.service';
+import { MetricsService } from '../../src/services/metrics.service';
+import * as climateMath from 'src/algorithms/climate-math';
 
 jest.mock('src/algorithms/climate-math', () => ({
   isAnomalousReading: jest.fn().mockReturnValue(false),
-  calculateDewPoint: jest
-    .fn()
-    .mockReturnValue({ dewPoint: 14.2, status: 'NORMAL' }),
-  calculateMovingAverage: jest.fn(),
+
+  calculateDewPoint: jest.fn().mockReturnValue({
+    dewPoint: 14.2,
+    status: 'NORMAL',
+  }),
+
+  // Devuelve el mismo array recibido
+  calculateMovingAverage: jest.fn((data) => data),
 }));
 
 jest.mock('src/algorithms/soil-and-tank-math', () => ({
@@ -17,7 +22,6 @@ jest.mock('src/algorithms/soil-and-tank-math', () => ({
 describe('MetricsService', () => {
   let service: MetricsService;
 
-  // Creamos los mocks de los repositorios
   const mockMetricsRepository = {
     findLatestMetrics: jest.fn(),
     findHistoryMetrics: jest.fn(),
@@ -32,13 +36,13 @@ describe('MetricsService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         MetricsService,
-        // Inyectamos los mocks usando los TOKENS de las interfaces
         { provide: 'IMetricsRepository', useValue: mockMetricsRepository },
         { provide: 'ISensorRepository', useValue: mockSensorsRepository },
       ],
     }).compile();
 
     service = module.get<MetricsService>(MetricsService);
+
     jest.clearAllMocks();
   });
 
@@ -46,7 +50,6 @@ describe('MetricsService', () => {
     expect(service).toBeDefined();
   });
 
-  // Actualizamos el nombre del método a getLatestReadings
   describe('getLatestReadings', () => {
     it('should return an empty array instantly if no sensor types are requested', async () => {
       const result = await service.getLatestReadings('device-123', []);
@@ -57,11 +60,13 @@ describe('MetricsService', () => {
 
     it('should query the repository when sensor types are provided', async () => {
       const mockDbResult = [{ type: 'temp', value: 25 }];
+
       mockMetricsRepository.findLatestMetrics.mockResolvedValue(mockDbResult);
 
       const result = await service.getLatestReadings('device-123', ['temp']);
 
       expect(result).toEqual(mockDbResult);
+
       expect(mockMetricsRepository.findLatestMetrics).toHaveBeenCalledWith(
         'device-123',
         ['temp'],
@@ -73,25 +78,47 @@ describe('MetricsService', () => {
     it('should return an empty array if no historical database metrics exist', async () => {
       mockMetricsRepository.findHistoryMetrics.mockResolvedValue([]);
 
-      const result = await service.getHistoryBySensorType('device-123', 'temp');
+      const result = await service.getHistoryBySensorType(
+        'device-123',
+        'temp',
+      );
 
       expect(result).toEqual([]);
+
       expect(mockMetricsRepository.findHistoryMetrics).toHaveBeenCalledWith(
         'device-123',
         'temp',
       );
     });
 
-    it('should return the untouched history array when data exists', async () => {
+    it('should apply moving average and return formatted history', async () => {
       const mockHistory = [
-        { value: 20, date: new Date() },
-        { value: 22, date: new Date() },
+        { value: 20, date: new Date('2026-01-01T10:00:00Z') },
+        { value: 22, date: new Date('2026-01-01T10:05:00Z') },
       ];
+
       mockMetricsRepository.findHistoryMetrics.mockResolvedValue(mockHistory);
 
-      const result = await service.getHistoryBySensorType('device-123', 'temp');
+      const result = await service.getHistoryBySensorType(
+        'device-123',
+        'temp',
+      );
 
-      expect(result).toEqual(mockHistory);
+      expect(climateMath.calculateMovingAverage).toHaveBeenCalledWith(
+        [20, 22],
+        5,
+      );
+
+      expect(result).toEqual([
+        {
+          value: 20,
+          date: mockHistory[0].date,
+        },
+        {
+          value: 22,
+          date: mockHistory[1].date,
+        },
+      ]);
     });
   });
 
@@ -112,7 +139,10 @@ describe('MetricsService', () => {
         id: 'sensor-uuid-999',
       });
 
-      const result = await service.registerMetrics('device-123', mockDto);
+      const result = await service.registerMetrics(
+        'device-123',
+        mockDto,
+      );
 
       expect(result).toEqual({
         status: 'success',
@@ -122,6 +152,7 @@ describe('MetricsService', () => {
       expect(mockSensorsRepository.findByDeviceAndType).toHaveBeenCalledTimes(
         4,
       );
+
       expect(mockMetricsRepository.saveMetric).toHaveBeenCalledTimes(4);
 
       expect(mockMetricsRepository.saveMetric).toHaveBeenCalledWith(
