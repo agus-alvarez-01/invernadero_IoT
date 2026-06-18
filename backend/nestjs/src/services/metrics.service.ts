@@ -96,7 +96,7 @@ export class MetricsService implements IMetricsService {
     };
   }
 
-  async getLatestReadings(
+  async getLatestMetric(
     idDevice: string,
     sensorTypes: string[],
   ): Promise<any[]> {
